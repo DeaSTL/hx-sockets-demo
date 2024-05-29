@@ -10,34 +10,32 @@ import (
 	"github.com/deastl/hx-sockets/compat"
 )
 
-
 func main() {
-  mux := http.NewServeMux()
+	mux := http.NewServeMux()
 	server := compat.NewNetHttp(mux).(compat.NethttpServer)
-  
+
 	server.Listen("some_message", func(ctx *compat.NethttpClient, msg *hx.Message) {
-    
-    state := false
 
-    if msg.Includes["state"] != nil {
-      state = msg.Includes["state"].(bool)
-    }
+		state := false
 
-    var buff bytes.Buffer
+		if msg.Includes["state"] != nil {
+			state = msg.Includes["state"].(bool)
+		}
 
-    views.Button(state).Render(context.Background(),&buff)
+		var buff bytes.Buffer
 
+		views.Button(state).Render(context.Background(), &buff)
 
 		ctx.SendStr(buff.String())
 	})
 
-  fs := http.FileServer(http.Dir("./static"))
-	mux.Handle("/static/",http.StripPrefix("/static/", fs))
+	fs := http.FileServer(http.Dir("./static"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-  server.Start("/ws") // where the web socket mounts
-  
+	server.Start("/ws") // where the web socket mounts
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    views.Main().Render(context.Background(),w)
+		views.Main().Render(context.Background(), w)
 	})
-  http.ListenAndServe(":3000",mux)
+	http.ListenAndServe(":3000", mux)
 }
